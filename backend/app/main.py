@@ -115,7 +115,7 @@ async def create_channel(channel_data: ChannelCreate):
         channel_data_dict = channel_data.dict()
         channel_data_dict["niche"] = channel_data.niche.value
         
-        result = db.insert_channel(channel_data_dict)
+        result = db.create_channel(channel_data_dict)
         
         if not result:
             raise HTTPException(status_code=500, detail="Failed to create channel")
@@ -272,6 +272,49 @@ async def analyze_video_performance(request: AnalyticsRequest):
         logger.error(f"Error analyzing video performance: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/analytics")
+async def get_analytics(channel_id: Optional[str] = None):
+    """Get general analytics or analytics for specific channel"""
+    try:
+        # Get all videos or videos for specific channel
+        videos = db.get_videos(channel_id) if channel_id else db.get_videos()
+        channels = db.get_channels()
+        
+        # Calculate basic analytics
+        total_videos = len(videos)
+        total_views = sum(video.get('views', 0) for video in videos)
+        total_revenue = sum(video.get('revenue', 0) for video in videos)
+        
+        # Mock some additional metrics
+        avg_ctr = 3.2  # Mock click-through rate
+        avg_retention = 67.8  # Mock retention rate
+        
+        # Find top performing video
+        top_video = max(videos, key=lambda x: x.get('views', 0)) if videos else None
+        
+        # Mock recent performance data
+        recent_performance = [
+            {"date": "2024-01-01", "views": 1200, "revenue": 24.50},
+            {"date": "2024-01-02", "views": 1850, "revenue": 37.20},
+            {"date": "2024-01-03", "views": 2100, "revenue": 42.80},
+            {"date": "2024-01-04", "views": 1650, "revenue": 31.90},
+            {"date": "2024-01-05", "views": 2800, "revenue": 58.40},
+        ]
+        
+        return {
+            "total_videos": total_videos,
+            "total_views": total_views,
+            "total_revenue": total_revenue,
+            "avg_ctr": avg_ctr,
+            "avg_retention": avg_retention,
+            "top_performing_video": top_video,
+            "recent_performance": recent_performance
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting analytics: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/analytics/channel/{channel_id}")
 async def get_channel_analytics(channel_id: str):
     try:
@@ -383,7 +426,7 @@ async def test_video_generation():
                 "style": "faceless"
             }
             
-            channel_result = db.insert_channel(test_channel)
+            channel_result = db.create_channel(test_channel)
             channel_id = channel_result["id"] if channel_result else None
         else:
             channel_id = channels[0]["id"]

@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class BaseAgent(ABC):
     def __init__(self, model_name: str = None):
         self.api_key = os.getenv("GROQ_API_KEY")
-        self.model_name = model_name or os.getenv("GROQ_MODEL", "llama3-8b-8192")
+        self.model_name = model_name or os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
         self.temperature = float(os.getenv("GROQ_TEMPERATURE", "0.7"))
         self.max_tokens = int(os.getenv("GROQ_MAX_TOKENS", "1024"))
         
