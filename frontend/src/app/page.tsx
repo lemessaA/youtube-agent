@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { VideoCard } from '@/components/ui/video-card'
+import { VideoPlayer } from '@/components/ui/video-player'
 import { 
   PlayCircle, 
   TrendingUp, 
@@ -157,18 +158,12 @@ export default function Dashboard() {
             {recentVideos.length > 0 ? (
               <div className="space-y-4">
                 {recentVideos.map((video) => (
-                  <div key={video.id} className="relative">
-                    <VideoCard video={video} compact={true} />
-                    
-                    {/* Real Video Indicator */}
-                    {video.video_url && (
-                      <div className="absolute top-2 right-2">
-                        <Badge variant="default" className="text-xs bg-green-600">
-                          Real MP4 ✓
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
+                  <VideoCard 
+                    key={video.id} 
+                    video={video} 
+                    compact={true} 
+                    showEmbeddedPlayer={true}
+                  />
                 ))}
                 
                 <div className="text-center pt-4">

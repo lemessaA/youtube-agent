@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils'
 const navigation = [
   { name: 'Dashboard', href: '/', icon: Home },
   { name: 'Channels', href: '/channels', icon: Video },
+  { name: 'All Videos', href: '/videos', icon: PlayCircle },
   { name: 'Generate Video', href: '/generate', icon: PlayCircle },
   { name: 'Video Ideas', href: '/ideas', icon: Lightbulb },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
