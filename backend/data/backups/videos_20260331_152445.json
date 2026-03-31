@@ -1,0 +1,25 @@
+[
+  {
+    "id": "21f662df-5d7a-48c3-bc87-2de914143b0f",
+    "created_at": "2026-03-31T15:24:21.339593",
+    "channel_id": "b4398d3b-b165-4f89-b1a8-bd0961eccfce",
+    "title": "How I Built a $10K/Month Business with AI",
+    "description": "Discover how i built a $10k/month business with ai. This video breaks down everything you need to know in under 2 minutes. Perfect for Production users.",
+    "script": "Did you know there's an AI tool that can automate your entire workflow? I've been testing this for weeks and the results are incredible...",
+    "status": "ready",
+    "views": 4475,
+    "likes": 45,
+    "comments": 13,
+    "revenue": 67.76,
+    "updated_at": "2026-03-31T15:24:25.350440"
+  },
+  {
+    "id": "36483923-2faa-4bca-9b17-f25be5344273",
+    "created_at": "2026-03-31T15:24:41.945390",
+    "channel_id": "948efcee-1987-4a01-ada1-2659b08e9aa3",
+    "title": "Generating...",
+    "description": "Video being generated...",
+    "script": "",
+    "status": "generating"
+  }
+]

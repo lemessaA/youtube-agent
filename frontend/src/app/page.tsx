@@ -154,12 +154,12 @@ export default function Dashboard() {
             {recentVideos.length > 0 ? (
               <div className="space-y-4">
                 {recentVideos.map((video) => (
-                  <div key={video.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div key={video.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                     <div className="flex-1">
-                      <h4 className="font-medium text-sm">{video.title}</h4>
+                      <h4 className="font-medium text-sm leading-tight">{video.title}</h4>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge 
-                          variant={video.status === 'published' ? 'default' : 'secondary'}
+                          variant={video.status === 'ready' ? 'default' : video.status === 'published' ? 'default' : 'secondary'}
                           className="text-xs"
                         >
                           {video.status}
@@ -167,15 +167,31 @@ export default function Dashboard() {
                         <span className="text-xs text-gray-500">
                           {video.views ? `${formatNumber(video.views)} views` : 'No views yet'}
                         </span>
+                        {video.duration && (
+                          <span className="text-xs text-gray-500">
+                            {Math.floor(video.duration / 60)}:{(video.duration % 60).toString().padStart(2, '0')}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-medium">
-                        {video.revenue ? formatCurrency(video.revenue) : '$0'}
+                      <div className="text-sm font-medium text-green-600">
+                        {video.revenue ? formatCurrency(video.revenue) : '$0.00'}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {video.likes ? `${formatNumber(video.likes)} likes` : ''}
                       </div>
                     </div>
                   </div>
                 ))}
+                
+                <div className="text-center pt-4">
+                  <Link href="/generate">
+                    <button className="text-sm text-blue-600 hover:text-blue-800">
+                      Generate More Videos →
+                    </button>
+                  </Link>
+                </div>
               </div>
             ) : (
               <div className="text-center py-8">

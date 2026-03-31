@@ -11,8 +11,8 @@ import Link from 'next/link'
 const niches = [
   { value: 'ai_tools', label: 'AI Tools', description: 'Latest AI software and applications' },
   { value: 'startup_ideas', label: 'Startup Ideas', description: 'Business opportunities and entrepreneurship' },
-  { value: 'tech_explainers', label: 'Tech Explainers', description: 'Technology concepts made simple' },
-  { value: 'make_money_online', label: 'Make Money Online', description: 'Online income strategies' },
+  { value: 'tech_explained', label: 'Tech Explainers', description: 'Technology concepts made simple' },
+  { value: 'make_money', label: 'Make Money Online', description: 'Online income strategies' },
   { value: 'side_hustles', label: 'Side Hustles', description: 'Part-time income opportunities' },
 ]
 
