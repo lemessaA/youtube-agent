@@ -13,29 +13,53 @@ class SupabaseDB:
     def __init__(self):
         self.supabase_url: str = os.getenv("SUPABASE_URL")
         self.supabase_key: str = os.getenv("SUPABASE_KEY")
+        self.storage_mode: str = os.getenv("STORAGE_MODE", "auto")  # auto, supabase, file
         
-        # In-memory storage for mock mode
-        self.mock_channels = []
-        self.mock_videos = []
-        self.mock_ideas = []
+        # Initialize storage backend
+        self.client = None
+        self.file_storage = None
         
-        if not self.supabase_url or not self.supabase_key or "placeholder" in self.supabase_url or "example" in self.supabase_url:
-            logger.warning("Supabase credentials not configured. Database operations will use mock data.")
-            self.client = None
-        else:
+        self._initialize_storage()
+        
+    def _initialize_storage(self):
+        """Initialize storage backend based on configuration"""
+        from .enhanced_storage import EnhancedFileStorage
+        
+        # Force file storage mode or auto-detect
+        if self.storage_mode == "file":
+            logger.info("🗄️  Using file-based storage (forced)")
+            self.file_storage = EnhancedFileStorage()
+            return
+        
+        # Try Supabase first
+        if self.supabase_url and self.supabase_key and "placeholder" not in self.supabase_url:
             try:
-                self.client: Client = create_client(self.supabase_url, self.supabase_key)
-                # Test the connection by trying to access a table
-                try:
-                    self.client.table("channels").select("id").limit(1).execute()
-                    logger.info("Connected to Supabase successfully")
-                except Exception as table_error:
-                    logger.warning(f"Supabase connected but tables not accessible: {table_error}")
-                    logger.warning("Falling back to mock data mode")
-                    self.client = None
+                self.client = create_client(self.supabase_url, self.supabase_key)
+                
+                # Test database access
+                self.client.table("channels").select("id").limit(1).execute()
+                logger.info("✅ Connected to Supabase with real database tables")
+                return
+                
             except Exception as e:
-                logger.error(f"Failed to connect to Supabase: {e}")
-                self.client = None
+                if "schema cache" in str(e) or "not find the table" in str(e):
+                    logger.warning("⚠️  Supabase connected but tables don't exist")
+                    logger.info("📝 Run the setup script or check PRODUCTION_SETUP.md")
+                else:
+                    logger.warning(f"⚠️  Supabase connection failed: {e}")
+        
+        # Fallback to enhanced file storage
+        logger.info("📁 Using enhanced file-based storage for production")
+        self.file_storage = EnhancedFileStorage()
+        
+    def _use_file_storage(self) -> bool:
+        """Check if using file storage"""
+        return self.file_storage is not None
+        
+    def _check_connection(self):
+        """Check if any storage backend is available"""
+        if not self.client and not self.file_storage:
+            raise Exception("No storage backend available")
 
     def _check_connection(self):
         """Check if database connection is available"""
@@ -45,9 +69,8 @@ class SupabaseDB:
     # Channels CRUD operations
     def get_channels(self) -> List[Dict[str, Any]]:
         """Get all channels"""
-        if not self.client:
-            logger.debug("Database not configured, returning mock data")
-            return self.mock_channels.copy()
+        if self._use_file_storage():
+            return self.file_storage.get_channels()
         
         try:
             response = self.client.table("channels").select("*").execute()
@@ -58,29 +81,22 @@ class SupabaseDB:
 
     def create_channel(self, channel_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new channel"""
-        if not self.client:
-            # Create and store mock data when database not configured
-            mock_channel = {
-                "id": f"mock_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')[:17]}",  # Include microseconds for uniqueness
-                "created_at": datetime.now().isoformat(),
-                "updated_at": datetime.now().isoformat(),
-                **channel_data
-            }
-            self.mock_channels.append(mock_channel)
-            logger.info(f"Created mock channel: {mock_channel['name']}")
-            return mock_channel
+        if self._use_file_storage():
+            return self.file_storage.create_channel(channel_data)
             
         try:
             response = self.client.table("channels").insert(channel_data).execute()
-            return response.data[0] if response.data else {}
+            result = response.data[0] if response.data else {}
+            logger.info(f"Created channel in Supabase: {result.get('name')}")
+            return result
         except Exception as e:
             logger.error(f"Error creating channel: {e}")
             raise
 
     def get_channel(self, channel_id: str) -> Dict[str, Any]:
         """Get channel by ID"""
-        if not self.client:
-            return {}
+        if self._use_file_storage():
+            return self.file_storage.get_channel(channel_id)
             
         try:
             response = self.client.table("channels").select("*").eq("id", channel_id).execute()
@@ -91,8 +107,8 @@ class SupabaseDB:
 
     def update_channel(self, channel_id: str, channel_data: Dict[str, Any]) -> Dict[str, Any]:
         """Update channel"""
-        if not self.client:
-            return {}
+        if self._use_file_storage():
+            return self.file_storage.update_channel(channel_id, channel_data)
             
         try:
             response = self.client.table("channels").update(channel_data).eq("id", channel_id).execute()
@@ -103,8 +119,8 @@ class SupabaseDB:
 
     def delete_channel(self, channel_id: str) -> bool:
         """Delete channel"""
-        if not self.client:
-            return True
+        if self._use_file_storage():
+            return self.file_storage.delete_channel(channel_id)
             
         try:
             self.client.table("channels").delete().eq("id", channel_id).execute()
@@ -116,14 +132,8 @@ class SupabaseDB:
     # Videos CRUD operations
     def get_videos(self, channel_id: Optional[str] = None, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         """Get all videos or videos for specific channel"""
-        if not self.client:
-            logger.debug("Database not configured, returning mock videos")
-            videos = self.mock_videos.copy()
-            if channel_id:
-                videos = [v for v in videos if v.get('channel_id') == channel_id]
-            if limit:
-                videos = videos[:limit]
-            return videos
+        if self._use_file_storage():
+            return self.file_storage.get_videos(channel_id, limit)
             
         try:
             query = self.client.table("videos").select("*")
@@ -139,26 +149,22 @@ class SupabaseDB:
 
     def create_video(self, video_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new video"""
-        if not self.client:
-            mock_video = {
-                "id": f"mock_video_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
-                "created_at": datetime.now().isoformat(),
-                **video_data
-            }
-            logger.info(f"Database not configured, returning mock video: {mock_video.get('title', 'Untitled')}")
-            return mock_video
+        if self._use_file_storage():
+            return self.file_storage.create_video(video_data)
             
         try:
             response = self.client.table("videos").insert(video_data).execute()
-            return response.data[0] if response.data else {}
+            result = response.data[0] if response.data else {}
+            logger.info(f"Created video in Supabase: {result.get('title')}")
+            return result
         except Exception as e:
             logger.error(f"Error creating video: {e}")
             raise
 
     def get_video(self, video_id: str) -> Dict[str, Any]:
         """Get video by ID"""
-        if not self.client:
-            return {}
+        if self._use_file_storage():
+            return self.file_storage.get_video(video_id)
             
         try:
             response = self.client.table("videos").select("*").eq("id", video_id).execute()
@@ -169,8 +175,8 @@ class SupabaseDB:
 
     def update_video(self, video_id: str, video_data: Dict[str, Any]) -> Dict[str, Any]:
         """Update video"""
-        if not self.client:
-            return {}
+        if self._use_file_storage():
+            return self.file_storage.update_video(video_id, video_data)
             
         try:
             response = self.client.table("videos").update(video_data).eq("id", video_id).execute()
@@ -182,8 +188,8 @@ class SupabaseDB:
     # Video Ideas CRUD operations
     def get_video_ideas(self, channel_id: str) -> List[Dict[str, Any]]:
         """Get video ideas for channel"""
-        if not self.client:
-            return []
+        if self._use_file_storage():
+            return self.file_storage.get_video_ideas(channel_id)
             
         try:
             response = self.client.table("video_ideas").select("*").eq("channel_id", channel_id).execute()
@@ -194,20 +200,45 @@ class SupabaseDB:
 
     def create_video_idea(self, idea_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new video idea"""
-        if not self.client:
-            mock_idea = {
-                "id": f"mock_idea_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
-                "created_at": datetime.now().isoformat(),
-                **idea_data
-            }
-            return mock_idea
+        if self._use_file_storage():
+            return self.file_storage.create_video_idea(idea_data)
             
         try:
             response = self.client.table("video_ideas").insert(idea_data).execute()
-            return response.data[0] if response.data else {}
+            result = response.data[0] if response.data else {}
+            logger.info(f"Created video idea in Supabase: {result.get('title')}")
+            return result
         except Exception as e:
             logger.error(f"Error creating video idea: {e}")
             raise
+    
+    # Utility methods
+    def get_storage_info(self) -> Dict[str, Any]:
+        """Get information about current storage backend"""
+        if self._use_file_storage():
+            stats = self.file_storage.get_storage_stats()
+            return {
+                "mode": "file_storage",
+                "persistent": True,
+                "location": str(self.file_storage.storage_dir),
+                "stats": stats
+            }
+        else:
+            return {
+                "mode": "supabase",
+                "persistent": True,
+                "location": self.supabase_url,
+                "connected": self.client is not None
+            }
+    
+    def create_backup(self) -> str:
+        """Create a backup of current data"""
+        if self._use_file_storage():
+            return self.file_storage.create_full_backup()
+        else:
+            # For Supabase, we could implement export functionality
+            logger.warning("Backup not implemented for Supabase mode")
+            return "Backup not available for Supabase mode"
 
 # Global database instance
 db = SupabaseDB()
