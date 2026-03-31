@@ -106,27 +106,5 @@
     "thumbnail_url": "/thumbnails/de60f1d7-5979-4b11-ad60-7de8262cebd6_thumbnail.jpg",
     "video_url": "/videos/de60f1d7-5979-4b11-ad60-7de8262cebd6_video.mp4",
     "updated_at": "2026-03-31T23:18:32.028177"
-  },
-  {
-    "id": "fb2fa67c-6191-4e3f-9cb8-2ea2af332a09",
-    "created_at": "2026-03-31T23:21:00.321104",
-    "channel_id": "948efcee-1987-4a01-ada1-2659b08e9aa3",
-    "title": "I Found the Next Billion Dollar Opportunity",
-    "description": "Discover i found the next billion dollar opportunity. This video breaks down everything you need to know in under 2 minutes. Perfect for Aspiring entrepreneurs.",
-    "script": "I just discovered a business opportunity that scales automatically. Here's exactly how it works...",
-    "status": "ready",
-    "views": 1014,
-    "likes": 170,
-    "comments": 5,
-    "revenue": 3.89,
-    "duration": 60,
-    "tags": [
-      "business",
-      "entrepreneur",
-      "startup"
-    ],
-    "thumbnail_url": "/thumbnails/fb2fa67c-6191-4e3f-9cb8-2ea2af332a09_thumbnail.jpg",
-    "video_url": "/videos/fb2fa67c-6191-4e3f-9cb8-2ea2af332a09_video.mp4",
-    "updated_at": "2026-03-31T23:22:00.317418"
   }
 ]

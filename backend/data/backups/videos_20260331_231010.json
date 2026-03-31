@@ -1,0 +1,53 @@
+[
+  {
+    "id": "21f662df-5d7a-48c3-bc87-2de914143b0f",
+    "created_at": "2026-03-31T15:24:21.339593",
+    "channel_id": "b4398d3b-b165-4f89-b1a8-bd0961eccfce",
+    "title": "How I Built a $10K/Month Business with AI",
+    "description": "Discover how i built a $10k/month business with ai. This video breaks down everything you need to know in under 2 minutes. Perfect for Production users.",
+    "script": "Did you know there's an AI tool that can automate your entire workflow? I've been testing this for weeks and the results are incredible...",
+    "status": "ready",
+    "views": 4475,
+    "likes": 45,
+    "comments": 13,
+    "revenue": 67.76,
+    "updated_at": "2026-03-31T15:24:25.350440"
+  },
+  {
+    "id": "36483923-2faa-4bca-9b17-f25be5344273",
+    "created_at": "2026-03-31T15:24:41.945390",
+    "channel_id": "948efcee-1987-4a01-ada1-2659b08e9aa3",
+    "title": "$100K Business You Can Start This Weekend",
+    "description": "Discover $100k business you can start this weekend. This video breaks down everything you need to know in under 2 minutes. Perfect for Aspiring entrepreneurs.",
+    "script": "I just discovered a business opportunity that anyone can start today. Here's exactly how it works...",
+    "status": "ready",
+    "views": 543,
+    "likes": 132,
+    "comments": 22,
+    "revenue": 100.51,
+    "updated_at": "2026-03-31T15:24:46.956539"
+  },
+  {
+    "id": "b61ddd5c-2f13-4143-9be3-64fb7193ba4f",
+    "created_at": "2026-03-31T15:24:45.142944",
+    "channel_id": "b43d75d2-3061-41e6-83ac-6d366356a855",
+    "title": "How This Changes Everything Forever",
+    "description": "Discover how this changes everything forever. This video breaks down everything you need to know in under 2 minutes. Perfect for developers.",
+    "script": "Everyone thinks quantum computing is complicated, but it's actually simple. Let me show you...",
+    "status": "ready",
+    "views": 4569,
+    "likes": 40,
+    "comments": 28,
+    "revenue": 7.68,
+    "updated_at": "2026-03-31T15:24:48.154604"
+  },
+  {
+    "id": "cbcd638b-11e0-4a98-aa1d-c7fb93a00937",
+    "created_at": "2026-03-31T23:10:04.844843",
+    "channel_id": "b4398d3b-b165-4f89-b1a8-bd0961eccfce",
+    "title": "Generating...",
+    "description": "Video being generated...",
+    "script": "",
+    "status": "generating"
+  }
+]

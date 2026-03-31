@@ -6,10 +6,13 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 import logging
 from datetime import datetime
+import os
 
 from agents import DailyAutomationAgent, TrendResearchAgent, AnalyticsAgent, MonetizationAgent
 from models import Channel, Video, VideoIdea, NicheType
@@ -36,6 +39,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount static files for videos and thumbnails
+videos_dir = os.path.join(os.path.dirname(__file__), "..", "videos")
+thumbnails_dir = os.path.join(os.path.dirname(__file__), "..", "thumbnails")
+os.makedirs(videos_dir, exist_ok=True)
+os.makedirs(thumbnails_dir, exist_ok=True)
+
+app.mount("/videos", StaticFiles(directory=videos_dir), name="videos")
+app.mount("/thumbnails", StaticFiles(directory=thumbnails_dir), name="thumbnails")
 
 # Custom middleware
 app.add_middleware(LoggingMiddleware)
@@ -278,20 +290,89 @@ async def _generate_video_content(video_id: str, channel_id: str):
         
         tags = tag_templates.get(niche, ['video', 'content', 'tutorial'])
         
+        # Create real video file
+        video_filename = f"{video_id}_video.mp4"
+        video_path = f"/home/lemessa-ahmed/youtube-agent/backend/videos/{video_filename}"
+        
+        # Create a video plan for generation
+        video_plan = {
+            "scenes": [
+                {
+                    "scene_number": 1,
+                    "duration": 8,
+                    "visual_type": "title_screen",
+                    "visual_description": "Eye-catching title screen",
+                    "voiceover": f"Welcome to {generated_title}",
+                    "on_screen_text": generated_title,
+                    "background_music": "Upbeat intro"
+                },
+                {
+                    "scene_number": 2, 
+                    "duration": 45,
+                    "visual_type": "main_content",
+                    "visual_description": "Main content with key points",
+                    "voiceover": script,
+                    "on_screen_text": "Key insights inside...",
+                    "background_music": "Ambient"
+                },
+                {
+                    "scene_number": 3,
+                    "duration": 7,
+                    "visual_type": "call_to_action",
+                    "visual_description": "Subscribe call to action",
+                    "voiceover": "Subscribe for more content like this!",
+                    "on_screen_text": "SUBSCRIBE FOR MORE!",
+                    "background_music": "Outro"
+                }
+            ],
+            "color_scheme": ["#1d4ed8", "#000000", "#ffffff"],
+            "font_style": "Arial Bold"
+        }
+        
+        # Import video generation agent and create real video
+        from agents.video_generation_agent import VideoGenerationAgent
+        video_agent = VideoGenerationAgent()
+        
+        try:
+            # Create the actual video file
+            await video_agent.create_video_file(video_plan, video_path)
+            logger.info(f"✅ Real video file created: {video_path}")
+            
+            # Verify file was created and has content
+            if os.path.exists(video_path):
+                file_size = os.path.getsize(video_path)
+                logger.info(f"📁 Video file size: {file_size / (1024*1024):.3f} MB")
+                
+                # Only consider it successful if file has reasonable size
+                if file_size > 1000:  # At least 1KB
+                    video_url_path = f"/videos/{video_filename}"
+                else:
+                    logger.warning(f"Video file too small ({file_size} bytes), treating as failed")
+                    video_path = None
+                    video_url_path = None
+            else:
+                video_path = None
+                video_url_path = None
+            
+        except Exception as video_error:
+            logger.warning(f"Video file creation failed: {video_error}")
+            video_path = None
+            video_url_path = None
+        
         # Update video with generated content
         updated_video_data = {
             "title": generated_title,
             "description": f"Discover {generated_title.lower()}. This video breaks down everything you need to know in under 2 minutes. Perfect for {channel.get('target_audience', 'everyone')}.",
             "script": script,
-            "status": "ready",
+            "status": "ready" if video_path else "ready_no_file",
             "views": randint(100, 5000),  # Simulate some initial views
             "likes": randint(10, 200),
             "comments": randint(5, 50),
             "revenue": round(randint(1, 100) + randint(0, 99)/100, 2),  # Random revenue $1-100
-            "duration": randint(60, 120),  # Video length in seconds
+            "duration": 60,  # Total duration from plan
             "tags": tags[:3],  # First 3 tags
-            "thumbnail_url": f"/thumbnails/{video_id}_thumbnail.jpg",  # Mock thumbnail path
-            "video_url": f"/videos/{video_id}_video.mp4"  # Mock video path
+            "thumbnail_url": f"/thumbnails/{video_id}_thumbnail.jpg",
+            "video_url": video_url_path if video_path else None
         }
         
         db.update_video(video_id, updated_video_data)

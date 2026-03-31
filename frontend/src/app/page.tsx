@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { VideoCard } from '@/components/ui/video-card'
 import { 
   PlayCircle, 
   TrendingUp, 
@@ -12,7 +13,9 @@ import {
   Video, 
   Users,
   Clock,
-  Plus
+  Plus,
+  Play,
+  Download
 } from 'lucide-react'
 import { api, type Analytics, type Channel, type Video } from '@/lib/api'
 import { formatNumber, formatCurrency } from '@/lib/utils'
@@ -154,42 +157,26 @@ export default function Dashboard() {
             {recentVideos.length > 0 ? (
               <div className="space-y-4">
                 {recentVideos.map((video) => (
-                  <div key={video.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-sm leading-tight">{video.title}</h4>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge 
-                          variant={video.status === 'ready' ? 'default' : video.status === 'published' ? 'default' : 'secondary'}
-                          className="text-xs"
-                        >
-                          {video.status}
+                  <div key={video.id} className="relative">
+                    <VideoCard video={video} compact={true} />
+                    
+                    {/* Real Video Indicator */}
+                    {video.video_url && (
+                      <div className="absolute top-2 right-2">
+                        <Badge variant="default" className="text-xs bg-green-600">
+                          Real MP4 ✓
                         </Badge>
-                        <span className="text-xs text-gray-500">
-                          {video.views ? `${formatNumber(video.views)} views` : 'No views yet'}
-                        </span>
-                        {video.duration && (
-                          <span className="text-xs text-gray-500">
-                            {Math.floor(video.duration / 60)}:{(video.duration % 60).toString().padStart(2, '0')}
-                          </span>
-                        )}
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-green-600">
-                        {video.revenue ? formatCurrency(video.revenue) : '$0.00'}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {video.likes ? `${formatNumber(video.likes)} likes` : ''}
-                      </div>
-                    </div>
+                    )}
                   </div>
                 ))}
                 
                 <div className="text-center pt-4">
                   <Link href="/generate">
-                    <button className="text-sm text-blue-600 hover:text-blue-800">
-                      Generate More Videos →
-                    </button>
+                    <Button variant="outline">
+                      <PlayCircle className="h-4 w-4 mr-2" />
+                      Generate More Videos
+                    </Button>
                   </Link>
                 </div>
               </div>
